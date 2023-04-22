@@ -1,16 +1,23 @@
-import requests    # 用于向目标网站发送请求
+import requests
 import os
 import re
 import time
 import base64
 import sys
 
-filepath = 'D:\\bfu_login_wifi\\pass_bfu_wifi_auto_login.txt'
+# -1 meas exception
+# 0 means process success
+# 1 means others conditions
+
+documents_folder = os.path.join(os.path.expanduser("~"), "Documents")
+filepath = os.path.join(documents_folder,'pass_bfu_wifi_auto_login.txt')
+# filepath = 'D:\\bfu_login_wifi\\pass_bfu_wifi_auto_login.txt'
 
 def is_logined():
-    resp = requests.get("http://10.1.1.10")
-    text = resp.text
-    loginStatu = resp.text.find("上网登录页")
+    # resp = requests.get("http://10.1.1.10")
+    text = requests.get("http://10.1.1.10").text
+    loginStatu = text.find("上网登录页")
+
     model_1 = re.compile(r'v46ip=\'(.+?)\'')
     model_2 = re.compile(r'v4ip=\'(.+?)\'')
     
@@ -69,12 +76,12 @@ def try_login(your_account,your_pass,ipv4):
     }
 
     response = requests.get(url, params=datas).status_code  # GET 方式向 URL 发送表单，同时获取状态码
-    print("状态码{}".format(response))  # 打印状态码
+    print("状态码:{}".format(response))  # 打印状态码
 
 def restore_info():
 
-    if not os.path.exists('D:\\bfu_login_wifi'):
-        os.mkdir('D:\\bfu_login_wifi')
+    if not os.path.exists(documents_folder):
+        os.mkdir(documents_folder)
 
     with open(filepath, 'w') as f:
         f.write('account=\'\'\n')
@@ -101,7 +108,7 @@ def main():
     
     if not os.path.exists(filepath):
         restore_info()
-        print('请您正确填写',filepath,'的内容。')
+        print('请您正确填写',filepath,'的账号密码的内容。')
         print('否则程序无法继续运行')
         time.sleep(3)
         return
@@ -124,12 +131,7 @@ def main():
         else:
             try_login(account[0],passwd[0],ipv4_str)
         
-        
         print('校园网连接成功。')
-
-        # print(stcode)
-        # print(account)
-        # print(passwd)
     else:
         print('您在使用本程序前已经连接过校园网。')
         print('退出程序。')
